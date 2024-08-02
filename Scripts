@@ -1,0 +1,44 @@
+Controller:
+
+ public class ReCaptchaResponse
+    {
+        public bool Success { get; set; }
+        public double Score { get; set; }
+        public string Action { get; set; }
+        [JsonProperty("challenge_ts")]
+        public string ChallengeTimeStamp { get; set; }
+        public string Hostname { get; set; }
+        public string[] ErrorCodes { get; set; }
+    }
+
+    public class ReCaptchaHelper
+    {
+        private static readonly string SecretKey = "CLAVE_SECRETA"; // Reemplaza con tu clave secreta
+
+        public static async Task<ReCaptchaResponse> ValidateTokenAsync(string token)
+        {
+            using (var client = new HttpClient())
+            {
+                var response = await client.GetStringAsync($"https://www.google.com/recaptcha/api/siteverify?secret={SecretKey}&response={token}");
+                var reCaptchaResponse = JsonConvert.DeserializeObject<ReCaptchaResponse>(response);
+                return reCaptchaResponse;
+            }
+        }
+    }
+
+Desde el controller se llama asi:
+
+var reCaptchaResponse = await ReCaptchaHelper.ValidateTokenAsync(gRecaptchaResponse);
+
+if (reCaptchaResponse.Success && reCaptchaResponse.Score >= 0.5)
+{
+if (EnviarCorreoContacto(nombre, email, mensaje))
+                    return View("Gracias");
+                else
+                    return View("Error");
+            }
+            else
+            {
+                return View("Error");
+            }
+
